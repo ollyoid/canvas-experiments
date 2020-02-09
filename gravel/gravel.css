@@ -1,0 +1,16 @@
+canvas {
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    border: none;
+    margin: 0;
+    background: black;
+    overflow: hidden;
+    overflow-y: hidden;
+  }
+
+  html {
+      overflow: auto;
+      overscroll-behavior: contain;
+  }

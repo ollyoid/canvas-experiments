@@ -24,7 +24,6 @@ let mouse = {
 };
 
 cvs.addEventListener('click', function (e) {
-    console.log("here");
     document.documentElement.webkitRequestFullScreen();
 });
 
@@ -51,14 +50,13 @@ class Squircle {
     this.r = r;
   };
   
-  draw = () => {
+  draw = (c) => {
     let innerLen = this.l-2*this.r;
     c.lineWidth = "1";
-    c.beginPath();
     // inner square
-    c.rect(this.x-innerLen/2, this.y-innerLen/2, innerLen, innerLen);
-    c.fill();
+    c.fillRect(this.x-innerLen/2, this.y-innerLen/2, innerLen, innerLen);
     //outer rects
+    c.beginPath();
     c.rect(this.x-innerLen/2, this.y-this.l/2, innerLen, this.r);
     c.rect(this.x+innerLen/2, this.y-innerLen/2, this.r, innerLen);
     c.rect(this.x-innerLen/2, this.y+innerLen/2, innerLen, this.r);
@@ -72,9 +70,9 @@ class Squircle {
     c.stroke();
   };
   
-  update = () => {
+  update = (c) => {
     // this is where we control movement and interactivity
-    this.draw();
+    this.draw(c);
   };
 
   mouseOver = () => {
@@ -94,31 +92,31 @@ class ConstAreaSquircle{
         this.growing = false;
     }
 
-    draw = () => {
-        this.squircle.draw();
+    draw = (c) => {
+        this.squircle.draw(c);
     }
 
-    refresh = () => {
+    refresh = (c) => {
         c.clearRect(this.x-this.rmax-1, this.y-this.rmax-1, this.rmax*2+2, this.rmax*2+2);
         this.r = this.rmax*this.s
         this.l = Math.sqrt(4*this.r**2 - Math.PI*(this.r**2 - this.rmax**2));
         this.squircle.r = this.r
         this.squircle.l = this.l
-        this.draw();
+        this.draw(c);
     }
 
-    update = () => {
+    update = (c) => {
         if (this.squircle.mouseOver() || Math.floor(Math.random() * 1000) ==1){
             this.growing = true;
         }
         if (this.growing){
             this.s = Math.min(this.s+0.05, 1);
-            this.refresh()
+            this.refresh(c)
             this.growing = !(this.s==1)
         }
         else if(this.s!=0) {
             this.s = Math.max(this.s-0.005,0);
-            this.refresh()
+            this.refresh(c)
         }
     }
 }
@@ -129,7 +127,7 @@ function animate() {
   Shape.draw() */
   for(i=0; i < n_tb; i +=1){
     for(j=0; j < n_lr; j+=1){
-            squircleArray[i][j].update();
+            squircleArray[i][j].update(c);
         }
     }
 
@@ -151,14 +149,32 @@ function restart(){
             squircleArray[i][j] = new ConstAreaSquircle( margin_rl + squircleWidth*(j+1/2) ,
                                                          margin_tb + squircleWidth*(i+1/2), 0, 
                                                         squircleWidth-2*squirclemargin);
-            squircleArray[i][j].draw();
+            squircleArray[i][j].draw(c);
         }
     }
 }
 
 window.addEventListener('resize', function () {
     restart();
-  });
+});
+
+
+function exportsvg() {
+    var ctx = new C2S(cvs.width,cvs.height);
+    for(i=0; i < n_tb; i +=1){
+        for(j=0; j < n_lr; j+=1){
+                squircleArray[i][j].draw(ctx);
+        }   
+    }
+    var toSave = ctx.getSerializedSvg(true);
+    Download.save(toSave,"out.svg");
+}
+
+document.addEventListener('keypress', function (e) {
+    if(e.key === 'd'){
+        exportsvg();
+    }
+});
 
   
 restart();
